@@ -8,18 +8,33 @@ void HttpServer::setup() {
   
   ESP_LOGI("HTTP", "Serveur HTTP démarré sur le port 8080");
 
-  // Route pour servir un fichier audio
-  server.on("/test.flac", HTTP_GET, [](AsyncWebServerRequest *request) {
-    File file = SD.open("/test.flac");
-    if (!file) {
-      request->send(404, "text/plain", "Fichier non trouvé");
+  // Route dynamique pour servir les fichiers audio
+  server.on("/audio", HTTP_GET, [](AsyncWebServerRequest *request) {
+    if (!request->hasParam("file")) {
+      request->send(400, "text/plain", "Paramètre 'file' manquant");
       return;
     }
 
-    request->send(file, "audio/flac");
-    file.close();
+    String filename = "/" + request->getParam("file")->value();
+    ESP_LOGI("HTTP", "Demande de fichier: %s", filename.c_str());
+
+    // Lire le fichier avec ton composant `sd_card`
+    auto fileData = id(sd_card)->read_file(filename.c_str());
+    if (fileData.empty()) {
+      request->send(404, "text/plain", "Fichier non trouvé ou vide");
+      return;
+    }
+
+    // Détecter le type MIME en fonction de l'extension
+    String contentType = "audio/mpeg"; // Par défaut MP3
+    if (filename.endsWith(".flac")) contentType = "audio/flac";
+    else if (filename.endsWith(".wav")) contentType = "audio/wav";
+    else if (filename.endsWith(".mp3")) contentType = "audio/mpeg";
+    
+    request->send_P(200, contentType.c_str(), fileData.data(), fileData.size());
   });
 
   server.begin();
 }
+
 
