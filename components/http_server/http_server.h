@@ -8,6 +8,6 @@ class HttpServer : public Component {
   void setup() override;
 
  private:
-  AsyncWebServer server = AsyncWebServer(8080);
+  AsyncWebServer server = AsyncWebServer(8123);
 };
 
