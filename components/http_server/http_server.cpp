@@ -8,7 +8,7 @@ void HttpServer::setup() {
   
   ESP_LOGI("HTTP", "Serveur HTTP démarré sur le port 8080");
 
-  // Route dynamique pour servir les fichiers audio
+  // Route simple pour servir un fichier audio
   server.on("/audio", HTTP_GET, [](AsyncWebServerRequest *request) {
     if (!request->hasParam("file")) {
       request->send(400, "text/plain", "Paramètre 'file' manquant");
@@ -25,16 +25,18 @@ void HttpServer::setup() {
       return;
     }
 
-    // Détecter le type MIME en fonction de l'extension
+    // Détecter le type MIME
     String contentType = "audio/mpeg"; // Par défaut MP3
     if (filename.endsWith(".flac")) contentType = "audio/flac";
     else if (filename.endsWith(".wav")) contentType = "audio/wav";
     else if (filename.endsWith(".mp3")) contentType = "audio/mpeg";
-    
+
+    // Envoyer le fichier
     request->send_P(200, contentType.c_str(), fileData.data(), fileData.size());
   });
 
   server.begin();
 }
+
 
 
