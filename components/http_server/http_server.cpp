@@ -38,5 +38,8 @@ void HttpServer::setup() {
   server.begin();
 }
 
+}  // namespace ftp_server
+}  // namespace esphome
+
 
 
